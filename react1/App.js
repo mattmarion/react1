@@ -10,31 +10,29 @@ import {
   StyleSheet,
   Text,
   Image,
-  View
+  View,
+  Dimensions
 } from 'react-native';
 
-const instructions = Platform.select({
-  ios: 'Press Cmd+R to reload,\n' +
-    'Cmd+D or shake for dev menu',
-  android: 'Double tap R on your keyboard to reload,\n' +
-    'Shake or press menu button for dev menu',
-});
+const app_width = Dimensions.get('screen').width;
+const app_height = Dimensions.get('screen').height;
+const app_scale = Dimensions.get('screen').scale;
 
 export class MainScreen extends Component {
   render() {
     return (
-		<View style={styles.mainscreen}>
-			<Image 
-				style={styles.bgimage}
-				source={require('./images/bg.png')} 
-				resizeMode="contain" 
-			/>
-			<Image
-				style={styles.mainscreen_screen}
-				source={require('./images/bg_screen.png')}
-				alignSelf="center"
-			/>
-		</View>
+      <View style={styles.mainscreen_bg}>
+        <Image 
+          style={styles.bgimage}
+          source={require('./images/bg.png')} 
+          resizeMode="contain" 
+        />
+        <Image
+          style={styles.tuner_screen}
+          source={require('./images/bg_screen.png')}
+          alignSelf="center"
+        />
+      </View>
     );
   }
 }
@@ -42,44 +40,54 @@ export class MainScreen extends Component {
 export default class App extends Component<{}> {
   render() {
     return (
-      <View style={styles.container}>
-		<View style={{alignItems: 'center'}}>
-			<MainScreen name='Main' />
-		</View>
+      <View style={styles.mainscreen}>
+        <MainScreen name='Main' />
+        <Text style={styles.debug}>
+          Height = {app_height}{'\n'}
+          Width = {app_width}{'\n'}
+          Scale = {app_scale}{'\n'}
+        </Text>
       </View>
     );
   }
 }
 
 const styles = StyleSheet.create({
-  container: {
+  mainscreen: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     backgroundColor: '#000000',
-	margin: 0
+    margin: 0
+  },
+  mainscreen_bg: {
+    
   },
   bgimage: {
-	flex: 1,
+    flex: 1,
     alignSelf: 'stretch'
   },
-  welcome: {
-    fontSize: 20,
-    textAlign: 'center',
-    margin: 10,
+  tuner_screen: {
+    flex: 1,
+    position: 'absolute',
+    left: (app_width*app_scale/2)-100,
+    top: 20
   },
-  instructions: {
-    textAlign: 'center',
-    color: '#333333',
-    marginBottom: 5,
-  },
-  mainscreen: {
-	 
-  },
-  mainscreen_screen: {
-	
-  }
+  debug: {
+    flex: 1,
+    position: 'absolute',
+    left: 0,
+    top: 0,
+    opacity: 0.5,
+    backgroundColor: 'red',
+  } 
 });
+
+// Get the app dimensions
+
+
+// Notes:
+// -Get the app dimensions to be able to center things...
 
 // skip this line if using Create React Native App
 //AppRegistry.registerComponent('React1', () => Bananas);
