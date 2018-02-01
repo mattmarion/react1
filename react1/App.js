@@ -14,36 +14,45 @@ import {
 	Dimensions,
 	StatusBar,
 	TouchableWithoutFeedback,
+	DeviceEventEmitter
 } from 'react-native';
+
+import Tuner from './tuner.js';
 
 const app_width = Dimensions.get('screen').width;
 const app_height = Dimensions.get('screen').height;
 const app_scale = Dimensions.get('screen').scale;
 
-currentNote = 'A';
-
 export class LeftTunerBars extends Component {
 	render() {
+		let greenbarl1 = (this.props.mainstate.currentTunerModDirection == "left" && this.props.mainstate.currentTunerMod > 1);
+		let greenbarl2 = (this.props.mainstate.currentTunerModDirection == "left" && this.props.mainstate.currentTunerMod > 2);
+		let greenbarl3 = (this.props.mainstate.currentTunerModDirection == "left" && this.props.mainstate.currentTunerMod > 3);
+		let greenbarl4 = (this.props.mainstate.currentTunerModDirection == "left" && this.props.mainstate.currentTunerMod > 4);
+		let greenbarl5 = (this.props.mainstate.currentTunerModDirection == "left" && this.props.mainstate.currentTunerMod > 5);
+		
+		//console.warn("greenbarl1 ", greenbarl1);
+		
 		return (
 			<View style={styles.left_tuner_bar}>
 				<Image
-					style={styles.greenbarl1}
+					style={[styles.greenbarl5_hidden, greenbarl5 && styles.greenbarl5]}
 					source={require('./images/green_bar.png')}
 				/>
 				<Image
-					style={styles.greenbarl2}
+					style={[styles.greenbarl4_hidden, greenbarl4 && styles.greenbarl4]}
 					source={require('./images/green_bar.png')}
 				/>
 				<Image
-					style={styles.greenbarl3}
+					style={[styles.greenbarl3_hidden, greenbarl3 && styles.greenbarl3]}
 					source={require('./images/green_bar.png')}
 				/>
 				<Image
-					style={styles.greenbarl4}
+					style={[styles.greenbarl2_hidden, greenbarl2 && styles.greenbarl2]}
 					source={require('./images/green_bar.png')}
 				/>
 				<Image
-					style={styles.greenbarl5}
+					style={[styles.greenbarl1_hidden, greenbarl1 && styles.greenbarl1]}
 					source={require('./images/green_bar.png')}
 				/>
 			</View>
@@ -53,26 +62,32 @@ export class LeftTunerBars extends Component {
 
 export class RightTunerBars extends Component {
 	render() {
+		let greenbarr1 = (this.props.mainstate.currentTunerModDirection == "right" && this.props.mainstate.currentTunerMod > 1);
+		let greenbarr2 = (this.props.mainstate.currentTunerModDirection == "right" && this.props.mainstate.currentTunerMod > 2);
+		let greenbarr3 = (this.props.mainstate.currentTunerModDirection == "right" && this.props.mainstate.currentTunerMod > 3);
+		let greenbarr4 = (this.props.mainstate.currentTunerModDirection == "right" && this.props.mainstate.currentTunerMod > 4);
+		let greenbarr5 = (this.props.mainstate.currentTunerModDirection == "right" && this.props.mainstate.currentTunerMod > 5);
+		
 		return (
 			<View style={styles.right_tuner_bar}>
 				<Image
-					style={styles.greenbarr1}
+					style={[styles.greenbarr1_hidden, greenbarr1 && styles.greenbarr1]}
 					source={require('./images/green_bar.png')}
 				/>
 				<Image
-					style={styles.greenbarr2}
+					style={[styles.greenbarr2_hidden, greenbarr2 && styles.greenbarr2]}
 					source={require('./images/green_bar.png')}
 				/>
 				<Image
-					style={styles.greenbarr3}
+					style={[styles.greenbarr3_hidden, greenbarr3 && styles.greenbarr3]}
 					source={require('./images/green_bar.png')}
 				/>
 				<Image
-					style={styles.greenbarr4}
+					style={[styles.greenbarr4_hidden, greenbarr4 && styles.greenbarr4]}
 					source={require('./images/green_bar.png')}
 				/>
 				<Image
-					style={styles.greenbarr5}
+					style={[styles.greenbarr5_hidden, greenbarr5 && styles.greenbarr5]}
 					source={require('./images/green_bar.png')}
 				/>
 			</View>
@@ -85,7 +100,8 @@ export class TunerScreenReadout extends Component {
 		return (
 			<View style={styles.tuner_readout}>
 				<TunerReadoutTop name='TunerReadoutTop' mainstate = {this.props.mainstate} key = {true} />
-				<TunerReadoutMiddle name='TunerReadoutMiddle' />
+				<TunerReadoutMiddle name='TunerReadoutMiddle' mainstate = {this.props.mainstate} />
+				<TunerReadoutBottom name='TunerReadoutBottom' mainstate = {this.props.mainstate} />
 			</View>
 		);
 	}
@@ -116,13 +132,29 @@ export class TunerReadoutMiddle extends Component {
 	render() {
 		return (
 			<View style={styles.tuner_readout_middle_view}>
-				<LeftTunerBars name='LeftTunerBars' />
+				<LeftTunerBars name='LeftTunerBars' mainstate = {this.props.mainstate} />
 				<Text 
 					style={styles.tuner_letter}
 				>
-					{currentNote}
+					{this.props.mainstate.currentTunerNote}
 				</Text>
-				<RightTunerBars name='RightTunerBars' />
+				<RightTunerBars name='RightTunerBars' mainstate = {this.props.mainstate} />
+			</View>
+		);
+	}
+}
+
+export class TunerReadoutBottom extends Component {
+	render() {
+		let greentriangle = (this.props.mainstate.currentTunerMod == 1);
+		
+		//console.warn("greentriangle: ", greentriangle);
+		return (
+			<View style={styles.tuner_readout_bottom_view}>
+				<Image
+					style={[styles.greentriangle_hidden, greentriangle && styles.greentriangle]}
+					source={require('./images/green_triangle.png')}
+				/>
 			</View>
 		);
 	}
@@ -227,17 +259,39 @@ export default class App extends Component<{}> {
 			flat3visible: false,
 			flat: 0,
 			onPressGuitarButton: this.onPressGuitarButton,
-			onPressFlatButton: this.onPressFlatButton, 
+			onPressFlatButton: this.onPressFlatButton,
+			currentTunerNote: "A",
+			currentTunerMod: 3,
+			currentTunerModDirection: "left",
+			tunerUpdate: this.tunerUpdate
 		};
+		
+		Tuner.startTuner();
+		
+		// Start up a timer to take tuner readings...
+		setInterval(() => {
+			Tuner.getTunerInfo(
+				(msg) => {
+					console.log(msg);
+				},
+				(tunerNote, tunerMod, tunerModDirection) => {
+					this.tunerUpdate(tunerNote, tunerMod, tunerModDirection);
+				}
+			);
+		}, 100);
+	}
+		
+	tunerUpdate = function(tunerNote, tunerMod, tunerModDirection) {
+		this.setState({currentTunerNote: tunerNote, currentTunerMod: tunerMod, currentTunerModDirection: tunerModDirection})
+		
 	}
 	
-	componentDidMount() {
+	componentDidMount = function() {
        StatusBar.setHidden(true);
     }
 	
 	onPressGuitarButton = () => {
 		this.setState({guitar: !this.state.guitar, bass: !this.state.bass});
-		//this.guitarReadoutCallback(this.state.guitar, this.state.bass);
 	}
 	
 	onPressFlatButton = () => {
@@ -331,84 +385,84 @@ const styles = StyleSheet.create({
 	tuner_letter: {
 		color: '#4e9e00', 
 		fontSize: 60,
-		fontFamily: 'sans-serif-medium',
+		fontFamily: Platform.OS === 'ios' ? 'HelveticaNeue-medium' : 'sans-serif-medium',
 		marginLeft: 15,
 		marginRight: 15
 	},
 	tuner_button_text_guitar: {
 		color: '#4e9e00', 
 		fontSize: 12,
-		fontFamily: 'sans-serif-medium',
+		fontFamily: Platform.OS === 'ios' ? 'HelveticaNeue-medium' : 'sans-serif-medium',
 		marginRight: 28
 	},
 	tuner_button_text_flat: {
 		color: '#4e9e00', 
 		fontSize: 12,
-		fontFamily: 'sans-serif-medium',
+		fontFamily: Platform.OS === 'ios' ? 'HelveticaNeue-medium' : 'sans-serif-medium',
 		marginLeft: 28
 	},
 	tuner_top_text_guitar: {
 		color: '#4e9e00', 
 		fontSize: 12,
-		fontFamily: 'sans-serif-medium',
+		fontFamily: Platform.OS === 'ios' ? 'HelveticaNeue-medium' : 'sans-serif-medium',
 		marginRight: 72
 	},
 	tuner_top_text_bass: {
 		color: '#4e9e00', 
 		fontSize: 12,
-		fontFamily: 'sans-serif-medium',
+		fontFamily: Platform.OS === 'ios' ? 'HelveticaNeue-medium' : 'sans-serif-medium',
 		marginLeft: 72
 	},
 	tuner_top_text_guitar_hidden: {
 		color: '#4e9e00', 
 		fontSize: 12,
-		fontFamily: 'sans-serif-medium',
+		fontFamily: Platform.OS === 'ios' ? 'HelveticaNeue-medium' : 'sans-serif-medium',
 		marginRight: 72,
 		opacity: 0
 	},
 	tuner_top_text_bass_hidden: {
 		color: '#4e9e00', 
 		fontSize: 12,
-		fontFamily: 'sans-serif-medium',
+		fontFamily: Platform.OS === 'ios' ? 'HelveticaNeue-medium' : 'sans-serif-medium',
 		marginLeft: 72,
 		opacity: 0
 	},
 	tuner_text_flat1: {
 		color: '#4e9e00', 
 		fontSize: 11,
-		fontFamily: 'sans-serif',
+		fontFamily: Platform.OS === 'ios' ? 'HelveticaNeue' : 'sans-serif',
 		fontWeight: 'bold'
 	},
 	tuner_text_flat2: {
 		color: '#4e9e00', 
 		fontSize: 11,
-		fontFamily: 'sans-serif',
+		fontFamily: Platform.OS === 'ios' ? 'HelveticaNeue' : 'sans-serif',
 		fontWeight: 'bold'
 	},
 	tuner_text_flat3: {
 		color: '#4e9e00', 
 		fontSize: 11,
-		fontFamily: 'sans-serif',
+		fontFamily: Platform.OS === 'ios' ? 'HelveticaNeue' : 'sans-serif',
 		fontWeight: 'bold'
 	},
 		tuner_text_flat1_hidden: {
 		color: '#4e9e00', 
 		fontSize: 11,
-		fontFamily: 'sans-serif',
+		fontFamily: Platform.OS === 'ios' ? 'HelveticaNeue' : 'sans-serif',
 		fontWeight: 'bold',
 		opacity: 0
 	},
 	tuner_text_flat2_hidden: {
 		color: '#4e9e00', 
 		fontSize: 11,
-		fontFamily: 'sans-serif',
+		fontFamily: Platform.OS === 'ios' ? 'HelveticaNeue' : 'sans-serif',
 		fontWeight: 'bold',
 		opacity: 0
 	},
 	tuner_text_flat3_hidden: {
 		color: '#4e9e00', 
 		fontSize: 11,
-		fontFamily: 'sans-serif',
+		fontFamily: Platform.OS === 'ios' ? 'HelveticaNeue' : 'sans-serif',
 		fontWeight: 'bold',
 		opacity: 0
 	},
@@ -427,11 +481,17 @@ const styles = StyleSheet.create({
 		justifyContent: 'center',
 		width: 276,
 	},
+	tuner_readout_bottom_view: {
+		flexDirection: 'row',
+		alignItems: 'center',
+		justifyContent: 'center',
+		marginBottom: 10
+	},
 	tuner_readout_top_view: {
 		flexDirection: 'row',
 		alignItems: 'center',
 		justifyContent: 'center',
-		marginBottom: 105,
+		marginBottom: 95,
 	},
 	tuner_readout_flat_view: {
 		flexDirection: 'row',
@@ -444,41 +504,103 @@ const styles = StyleSheet.create({
 	right_tuner_bar: {
 		flexDirection: 'row'
 	},
+	greentriangle: {
+		opacity: 100
+	},
+	greentriangle_hidden: {
+		opacity: 0
+	},
 	greenbarl1: {
-		marginRight: 5
+		marginRight: 5,
+		opacity: 100
 	},
 	greenbarl2: {
 		marginRight: 5,
-		marginLeft: 5
+		marginLeft: 5,
+		opacity: 100
 	},
 	greenbarl3: {
 		marginRight: 5,
-		marginLeft: 5
+		marginLeft: 5,
+		opacity: 100
 	},
 	greenbarl4: {
 		marginRight: 5,
-		marginLeft: 5
+		marginLeft: 5,
+		opacity: 100
 	},
 	greenbarl5: {
-		marginLeft: 5
+		marginLeft: 5,
+		opacity: 100
 	},
 	greenbarr1: {
-		marginRight: 5
+		marginRight: 5,
+		opacity: 100
 	},
 	greenbarr2: {
 		marginRight: 5,
-		marginLeft: 5
+		marginLeft: 5,
+		opacity: 100
 	},
 	greenbarr3: {
 		marginRight: 5,
-		marginLeft: 5
+		marginLeft: 5,
+		opacity: 100
 	},
 	greenbarr4: {
 		marginRight: 5,
-		marginLeft: 5
+		marginLeft: 5,
+		opacity: 100
 	},
 	greenbarr5: {
-		marginLeft: 5
+		marginLeft: 5,
+		opacity: 100
+	},
+	greenbarl1_hidden: {
+		marginRight: 5,
+		opacity: 0
+	},
+	greenbarl2_hidden: {
+		marginRight: 5,
+		marginLeft: 5,
+		opacity: 0
+	},
+	greenbarl3_hidden: {
+		marginRight: 5,
+		marginLeft: 5,
+		opacity: 0
+	},
+	greenbarl4_hidden: {
+		marginRight: 5,
+		marginLeft: 5,
+		opacity: 0
+	},
+	greenbarl5_hidden: {
+		marginLeft: 5,
+		opacity: 0
+	},
+	greenbarr1_hidden: {
+		marginRight: 5,
+		opacity: 0
+	},
+	greenbarr2_hidden: {
+		marginRight: 5,
+		marginLeft: 5,
+		opacity: 0
+	},
+	greenbarr3_hidden: {
+		marginRight: 5,
+		marginLeft: 5,
+		opacity: 0
+	},
+	greenbarr4_hidden: {
+		marginRight: 5,
+		marginLeft: 5,
+		opacity: 0
+	},
+	greenbarr5_hidden: {
+		marginLeft: 5,
+		opacity: 0
 	},
 	debug: {
 		flex: 1,
