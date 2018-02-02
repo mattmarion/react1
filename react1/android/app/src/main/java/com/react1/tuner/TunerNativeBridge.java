@@ -5,6 +5,6 @@ public class TunerNativeBridge {
         System.loadLibrary("Tuner");
     }
 
-    public static native void getTunerInfo(float[] in, float[] out, int sample, int len);
+    public static native void calculateTunerInfo(float[] in, int[] out, int sample, int len);
 
 }
