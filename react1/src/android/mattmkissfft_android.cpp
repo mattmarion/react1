@@ -2,7 +2,7 @@
 
 #include <mattmkissfft.h>
 
-extern 'C' {
+extern "C" {
 
     MattmKissFFT fft;
 

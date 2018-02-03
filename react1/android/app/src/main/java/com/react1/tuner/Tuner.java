@@ -10,6 +10,8 @@ import android.media.AudioFormat;
 import android.media.AudioRecord;
 import android.media.MediaRecorder;
 
+import android.util.Log;
+
 import com.react1.tuner.TunerNativeBridge;
 
 public class Tuner extends ReactContextBaseJavaModule {
@@ -21,11 +23,11 @@ public class Tuner extends ReactContextBaseJavaModule {
 	};
 
 	private static final int RECORDER_SAMPLERATE = 44100;
-	private static final int RECORDER_SAMPLELENGTH = 22050;
+	private static final int RECORDER_SAMPLELENGTH = 11025;
 	private static final int FFT_BUFFER_SIZE = 441000;
 
 	private static final int RECORDER_CHANNELS = AudioFormat.CHANNEL_IN_MONO;
-	private static final int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_8BIT;
+	private static final int RECORDER_AUDIO_ENCODING = AudioFormat.ENCODING_PCM_16BIT;
 
 	private AudioRecord recorder = null;
 	private boolean isRecording = false;
@@ -48,11 +50,22 @@ public class Tuner extends ReactContextBaseJavaModule {
 		successCallback.invoke(tunerNote, tunerMod, tunerModDirection);
 	}
 
-	private void startTuner() {
+	@ReactMethod
+	public void startTuner() {
 		TunerThread tunerThread = new TunerThread();
 
 		int bufferSize = AudioRecord.getMinBufferSize(RECORDER_SAMPLERATE, RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING);
-		if(bufferSize < RECORDER_SAMPLELENGTH) bufferSize = RECORDER_SAMPLELENGTH;
+
+		// Note here that we need to make sure that the buffer size conforms to:
+		// audiobuffersize % (total bytes per channel: 1 for 8, 2 for 16bit) == 0
+		// So for 11025 sample length we'll need an 11026 sized buffer...
+		if(bufferSize < RECORDER_SAMPLELENGTH)
+		{
+			if(RECORDER_SAMPLELENGTH % 2 != 0) bufferSize = RECORDER_SAMPLELENGTH+1;
+			else bufferSize = RECORDER_SAMPLELENGTH;
+		}
+
+		Log.e("MATTM ERROR", "buffersize is: " + bufferSize);
 
 		recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, RECORDER_SAMPLERATE, RECORDER_CHANNELS, RECORDER_AUDIO_ENCODING, bufferSize);
 
@@ -75,6 +88,15 @@ public class Tuner extends ReactContextBaseJavaModule {
 
 			while (isRecording) {
 
+				// Might be re-reading the data here, not sure
+				// Depends how it works.  If the buffer is huge and I keep
+				// reading from 0 then I'll always get the same data.  The
+				// only way this will work is if the buffer is the right size
+				// and I read the whole thing each time and each time I read
+				// it it refills it with new data.
+
+				// Also might want to start another thread here to do the fft processing.
+				// Reason for that is that
 				recorder.read(sData, 0, RECORDER_SAMPLELENGTH);
 
 				for(int i = 0; i < RECORDER_SAMPLELENGTH; i++) {
@@ -91,6 +113,6 @@ public class Tuner extends ReactContextBaseJavaModule {
 
 		}
 
-	}
+	};
 
 }
